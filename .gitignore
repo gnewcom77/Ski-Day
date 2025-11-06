@@ -1,0 +1,13 @@
+target/
+
+.classpath
+.project
+.settings/
+.idea/
+.vscode/
+
+
+.DS_Store
+
+# Logs
+*.log
