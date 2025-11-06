@@ -1,49 +1,44 @@
-# 🏔️ Ski Day — Spring Boot + MySQL REST API
+# Ski Day
 
-A clean, fully functional REST API to log **ski and snowboard days** for both **resort** and **backcountry** outings.  
-Built with **Java 17 / Spring Boot 3 / MySQL 8**, verified with **ARC**, and seeded automatically via `data.sql`.
+This project is a simple Spring Boot REST API I built to log and track ski days.  
+It lets you record information about users, resorts, and ski sessions, including the date, season, conditions, and whether it was a resort or backcountry day.
 
----
-
-## 🚀 Overview
-Ski Day lets users record and query their ski sessions with proper validation for:
-- Season and date alignment (e.g., *“2024/25” = Nov 1 2024 – Apr 30 2025*)
-- Day Type enum: **RESORT** or **BACKCOUNTRY**
-- Linked entities for **User ↔ Ski Session ↔ Resort**
-
-Each app start automatically resets and seeds sample data for easy testing.
+It was built mainly as a practice project to improve my understanding of REST APIs, MySQL databases, and how data flows between entities in Spring Boot.
 
 ---
 
-## 🧩 Tech Stack
-| Layer | Technology |
-|-------|-------------|
-| Backend | Java 17, Spring Boot 3.5 |
-| ORM | Spring Data JPA / Hibernate |
-| Database | MySQL 8 |
-| Build Tool | Maven |
-| Testing / API | ARC / Postman |
-| IDE | Eclipse / IntelliJ |
+## Overview
+
+Ski Day has three main parts:
+- **Users** – the people logging their ski sessions  
+- **Resorts** – the locations where sessions happen  
+- **Ski Sessions** – the actual logged days, connected to a user and (optionally) a resort
+
+Each session includes fields for conditions, type (RESORT or BACKCOUNTRY), and notes.  
+Basic validation checks make sure that sessions fall within the correct season (e.g., the 2024/25 season runs from November 1, 2024 through April 30, 2025).
 
 ---
 
-## ⚙️ How to Run Locally
-1. **Create the database**
+## How to Run
+
+1. Create a MySQL database called `skiday`
    ```sql
    CREATE DATABASE skiday CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-2. **Configure credentials**  
-   Copy the example file and update with your MySQL info:  
-   `src/main/resources/application-example.yaml → application.yaml`
+2. Copy the `application-example.yaml` file from  
+   `src/main/resources/`  
+   and rename it to `application.yaml`
 
-3. **Run the app**
+3. Edit the new file with your own MySQL username and password.
+
+4. Start the app:
    ```bash
    ./mvnw spring-boot:run
    ```
-   or start from your IDE.
+   or run it from your IDE.
 
-4. **Verify seed data**
+5. Once running, test with:
    ```
    GET http://localhost:8080/users
    GET http://localhost:8080/resorts
@@ -52,56 +47,9 @@ Each app start automatically resets and seeds sample data for easy testing.
 
 ---
 
-## 🧠 Entity Model
-```
-User ───< SkiSession >─── Resort
-```
-**User**
-- id (Long)  
-- name (String)
+## Example Request (POST)
 
-**Resort**
-- id (Long)  
-- name (String)  
-- region (String)  
-- state (String)
-
-**SkiSession**
-- id (Long)  
-- user (User FK)  
-- resort (Resort FK, nullable for BACKCOUNTRY)  
-- date (LocalDate)  
-- season (String)  
-- type (Enum: RESORT / BACKCOUNTRY)  
-- conditions, notes, metrics (ascent, descent, miles, elapsedMinutes…)
-
----
-
-## 🔗 Endpoints Summary
-
-| Method | Endpoint | Description |
-|:--|:--|:--|
-| **GET** | `/users` | List all users |
-| **POST** | `/users` | Create user |
-| **PUT** | `/users/{id}` | Update user |
-| **DELETE** | `/users/{id}` | Delete user |
-| **GET** | `/resorts` | List resorts |
-| **POST** | `/resorts` | Create resort |
-| **PUT** | `/resorts/{id}` | Update resort |
-| **DELETE** | `/resorts/{id}` | Delete resort |
-| **GET** | `/sessions` | List all sessions |
-| **GET** | `/sessions/{id}` | Get one session |
-| **GET** | `/sessions/season?season=2024/25` | Filter by season |
-| **GET** | `/sessions/season?season=2024/25&type=RESORT` | Filter by season + type |
-| **POST** | `/sessions` | Add new ski session |
-| **PUT** | `/sessions/{id}` | Update existing session |
-| **DELETE** | `/sessions/{id}` | Delete session |
-
----
-
-## 🧪 Example Requests
-
-**POST /sessions – RESORT day**
+**Add a new resort ski session**
 ```json
 {
   "userId": 1,
@@ -114,79 +62,63 @@ User ───< SkiSession >─── Resort
 }
 ```
 
-**POST /sessions – BACKCOUNTRY day**
+**Add a backcountry day**
 ```json
 {
-  "userId": 2,
+  "userId": 1,
   "season": "2024/25",
   "date": "2025-03-01",
   "type": "BACKCOUNTRY",
   "region": "Hyalite",
-  "conditions": "wind buff",
-  "notes": "short tour"
-}
-```
-
-**Response**
-```json
-{
-  "id": 8,
-  "user": {"id":1,"name":"Garrett"},
-  "type": "RESORT",
-  "resort": {"id":2,"name":"Jackson Hole"},
-  "season": "2024/25",
-  "date": "2025-03-10",
-  "conditions": "soft groomers",
-  "notes": "after work laps"
+  "conditions": "powder",
+  "notes": "Great tour with friends"
 }
 ```
 
 ---
 
-## 🧾 Dev Notes
-- `data.sql` resets tables and seeds baseline users, resorts, and sessions each startup.  
-- `application.yaml` is ignored in Git (.gitignore) to protect credentials.  
-- The repo includes an `application-example.yaml` template for local setup.  
-- All CRUD routes validated and tested via ARC (expected codes: 200/201/204).
+## API Endpoints
+
+| Method | Endpoint | Description |
+|:--|:--|:--|
+| GET | `/users` | Get all users |
+| POST | `/users` | Create a new user |
+| PUT | `/users/{id}` | Update a user |
+| DELETE | `/users/{id}` | Delete a user |
+| GET | `/resorts` | Get all resorts |
+| POST | `/resorts` | Create a new resort |
+| PUT | `/resorts/{id}` | Update a resort |
+| DELETE | `/resorts/{id}` | Delete a resort |
+| GET | `/sessions` | Get all sessions |
+| GET | `/sessions/{id}` | Get one session |
+| POST | `/sessions` | Create a new session |
+| PUT | `/sessions/{id}` | Update a session |
+| DELETE | `/sessions/{id}` | Delete a session |
 
 ---
 
-## 📁 File Structure
-```
-src/main/java/skiday
- ├── controller
- ├── dto
- ├── entity
- ├── enums
- ├── repository
- └── util
-src/main/resources
- ├── application.yaml
- └── data.sql
-```
+## Notes
+
+- The `data.sql` file loads a few sample users, resorts, and sessions at startup.  
+- The `application.yaml` file should never be uploaded to GitHub — credentials stay local.  
+- `application-example.yaml` is included for reference.
 
 ---
 
-## 🧰 Next Steps / Ideas
-- Add authentication (Spring Security + JWT)
-- Deploy on Render or Fly.io for public demo
-- Build a small React or JavaFX frontend to track ski days visually
-- Extend model for weather, gear logs, or photos
+## About
+
+This project was built with:
+- Java 17  
+- Spring Boot 3  
+- MySQL 8  
+- Maven  
+
+It’s a simple backend project meant to show solid REST API design and CRUD operations.  
+The main goal was to get more comfortable with JPA, entity relationships, and validation in Spring.
 
 ---
 
-## 🪪 License
-MIT License — free for personal and educational use.
+## Author
 
----
-
-## 💼 LinkedIn / Resume Summary
-- Developed a **Spring Boot REST API** to record and query ski sessions with validation and enum logic.  
-- Built a relational schema linking **Users**, **Resorts**, and **Sessions** in **MySQL**.  
-- Verified endpoints via **ARC** and documented with sample requests for fast onboarding.
-
-**GitHub:** <<EDIT: ADD YOUR GITHUB REPO LINK HERE>>
-**Dates:** <<EDIT: ENTER PROJECT DATES (e.g., JAN–FEB 2025)>>
-**Author:** <<EDIT: GARRETT NEWCOMER>>
-
----
+**Garrett Newcomer**  
+[<<ADD YOUR GITHUB LINK HERE>>](<<ADD YOUR GITHUB LINK HERE>>)
